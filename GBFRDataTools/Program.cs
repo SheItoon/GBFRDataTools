@@ -2,7 +2,11 @@
 using GBFRDataTools.Archive;
 using GBFRDataTools.FlatArk;
 using GBFRDataTools.Configuration;
-
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using RestSharp;
 
 namespace GBFRDataTools;
@@ -10,7 +14,7 @@ namespace GBFRDataTools;
 internal class Program
 {
     public const string Version = "0.1.1";
-
+    
     static void Main(string[] args)
     {
         Console.WriteLine("---------------------------------------------");
@@ -21,7 +25,40 @@ internal class Program
         Console.WriteLine("---------------------------------------------");
 
         GetLatestFileList();
+        string test = "ui/fhd/layouts/common/image_equip/noatlastextures/cmn_imgequ_wp1801.wtb";
+        using var archive = new DataArchive();
+        archive.Init("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Granblue Fantasy Relink\\data.i");
+        Console.WriteLine("looking for {0}", test);
+        
+        const bool checker = true;
+        if (checker)
+        {
 
+            string file1Path =
+                "C:\\Users\\Guillaume\\Desktop\\Reloaded-II\\Mods\\gbfrelink.utility.filenamelogger1.0.0\\filelist.txt";
+            string file2Path = "C:\\Users\\Guillaume\\Documents\\tmp\\fork\\GBFRDataTools\\GBFRDataTools\\filelist.txt";
+            string linesNotInFile2Path = "C:\\Users\\Guillaume\\Documents\\tmp\\fork\\GBFRDataTools\\result.txt";
+
+            var file1Lines = File.ReadLines(file1Path).Where(line =>
+                line.Contains('/') && !line.Contains("yml_") && archive.FileExistsInArchive(line)).Distinct();
+
+            Console.WriteLine("path count  post filtering {0}", file1Lines.Count());
+            var file2Lines = File.ReadLines(file2Path);
+
+            var linesNotInFile2 = file1Lines.Except(file2Lines);
+
+            Console.WriteLine("New paths count {0}", linesNotInFile2.Count());
+            File.WriteAllLines(linesNotInFile2Path, linesNotInFile2);
+
+            Console.WriteLine("Lines not present in file2 have been written to {0}", linesNotInFile2Path);
+
+            OpenFileExplorer(linesNotInFile2Path);
+        }
+        else
+        {
+            Console.WriteLine("path found: {0}", archive.FileExistsInArchive(test));
+        }
+        /*
         var p = Parser.Default.ParseArguments<ExtractVerbs, ExtractAllVerbs, ListFilesVerbs, AddExternalFilesVerbs>(args);
 
         p.WithParsed<ExtractVerbs>(Extract)
@@ -29,9 +66,21 @@ internal class Program
          .WithParsed<ListFilesVerbs>(ListFiles)
          .WithParsed<AddExternalFilesVerbs>(AddExternalFiles)
          .WithNotParsed(HandleNotParsedArgs);
+         */
+
 
     }
+    
+    static void OpenFileExplorer(string filePath)
+    {
+        // Get the directory containing the file
+        string directoryPath = Path.GetDirectoryName(filePath);
 
+        Console.WriteLine("path {0}", directoryPath);
+        // Open the directory in the default file explorer
+        Process.Start("explorer.exe", directoryPath);
+    }
+    
     public static void Extract(ExtractVerbs verbs)
     {
 

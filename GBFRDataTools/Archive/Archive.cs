@@ -256,7 +256,19 @@ public class DataArchive : IDisposable
         ulong hash = BinaryPrimitives.ReadUInt64BigEndian(hashBytes);
         return hash;
     }
+    
+    public bool FindFileName(string filePath)
+    {
+        ulong hash = HashPath(filePath);
+        int index = Index.ExternalFilesHashTable.BinarySearch(hash);
+        index = Index.ArchiveFilesHashTable.BinarySearch(hash);
 
+        if (index < 0)
+        {
+            return false;
+        }
+        return true;
+    }
     public void AddExternalFiles(string folder)
     {
         Console.WriteLine($"Scanning '{folder}' for files...");
