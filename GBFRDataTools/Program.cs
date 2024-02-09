@@ -25,7 +25,7 @@ internal class Program
         Console.WriteLine("---------------------------------------------");
 
         GetLatestFileList();
-        string test = "ui/fhd/layouts/common/image_equip/noatlastextures/cmn_imgequ_wp1801.wtb";
+        string test = "sound/japanese/vo_ft370.pck";
         using var archive = new DataArchive();
         archive.Init("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Granblue Fantasy Relink\\data.i");
         Console.WriteLine("looking for {0}", test);
@@ -41,10 +41,12 @@ internal class Program
 
             var file1Lines = File.ReadLines(file1Path).Where(line =>
                 line.Contains('/') && !line.Contains("yml_") && archive.FileExistsInArchive(line)).Distinct();
-
+            var engLines = file1Lines.Where(line => line.Contains("/jpn")).Select(line => line.Replace("jpn", "eng")).Where(line => archive.FileExistsInArchive(line));
+            file1Lines = file1Lines.Concat(engLines);
             Console.WriteLine("path count  post filtering {0}", file1Lines.Count());
             var file2Lines = File.ReadLines(file2Path);
 
+            Console.WriteLine("both contains ? {0}", file1Lines.Contains(test) && file2Lines.Contains(test));
             var linesNotInFile2 = file1Lines.Except(file2Lines);
 
             Console.WriteLine("New paths count {0}", linesNotInFile2.Count());
