@@ -41,20 +41,21 @@ internal class Program
 
             var file1Lines = File.ReadLines(file1Path).Where(line =>
                 line.Contains('/') && !line.Contains("yml_") && archive.FileExistsInArchive(line)).Distinct();
-            var engLines = file1Lines.Where(line => line.Contains("/jpn")).Select(line => line.Replace("jpn", "eng")).Where(line => archive.FileExistsInArchive(line));
-
-            file1Lines = file1Lines.Concat(engLines);
-            Console.WriteLine("path count  post filtering {0}", file1Lines.Count());
-            var file2Lines = File.ReadLines(file2Path);
-
-            /*
-            var engLines = file2Lines.Where(line => line.Contains("/jpn"))
+            
+            var engLines = file1Lines.Where(line => line.Contains("/jpn"))
                 .Select(line => line.Replace("jpn", "eng"))
-                .Where(line => archive.FileExistsInArchive(line)).Except(file2Lines);
-            */
+                .Where(line => archive.FileExistsInArchive(line)).Distinct();
+            file1Lines = file1Lines.Concat(engLines);
+            
+            var file2Lines = File.ReadLines(file2Path);
+            var hdLines = file1Lines.Where(line => line.Contains("/fhd"))
+                .Select(line => line.Replace("fhd", ""))
+                .Where(line => archive.FileExistsInArchive(line)).Distinct();
+            file1Lines = file1Lines.Concat(hdLines);
+            
+
             var linesNotInFile2 = file1Lines.Except(file2Lines);
 
-            Console.WriteLine("New paths count {0}", linesNotInFile2.Count());
             
             File.WriteAllLines(linesNotInFile2Path, linesNotInFile2);
 
